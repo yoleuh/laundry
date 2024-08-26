@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 
 type TimerType = ReturnType<typeof setTimeout>;
-type MachineState = "idle" | "filling" | "washing" | "finished";
+type MachineState = "idle" | "filling" | "washing" | "paused" | "finished";
 type Program = "normal" | "delicate" | "heavy";
 
 const programDurations: Record<Program, number> = {
@@ -52,6 +52,10 @@ const WashingMachine = () => {
       setState("filling");
       setWaterLevel(0);
       setTimeRemaining(programDurations[program]);
+    } else if (state === "paused") {
+      setState("washing");
+    } else if (state === "washing") {
+      setState("paused");
     }
   };
 
@@ -73,6 +77,13 @@ const WashingMachine = () => {
     return `${mins.toString().padStart(2, "0")}:${secs
       .toString()
       .padStart(2, "0")}`;
+  };
+
+  const getButtonText = () => {
+    if (state === "idle") return "▶️";
+    if (state === "washing") return "⏸️";
+    if (state === "paused") return "▶️";
+    return "▶️";
   };
 
   return (
@@ -128,16 +139,17 @@ const WashingMachine = () => {
       <div className="text-xl font-bold mb-2">
         {state === "idle" && "Ready"}
         {state === "filling" && "Filling..."}
-        {state === "washing" && `Washing: ${formatTime(timeRemaining)}`}
+        {(state === "washing" || state === "paused") &&
+          `Washing: ${formatTime(timeRemaining)}`}
         {state === "finished" && "Finished!"}
       </div>
       <div className="flex space-x-2 mb-4">
         <button
           onClick={startMachine}
           className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
-          disabled={state !== "idle"}
+          disabled={state === "filling" || state === "finished"}
         >
-          ▶️
+          {getButtonText()}
         </button>
         <button
           onClick={resetMachine}
