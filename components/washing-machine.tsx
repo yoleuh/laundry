@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 
 type TimerType = ReturnType<typeof setTimeout>;
@@ -29,7 +28,7 @@ const WashingMachine = () => {
             setState("washing");
             return 100;
           }
-          return prevLevel + 5;
+          return prevLevel + 10;
         });
       }, 500); // Fill in 10 seconds
     } else if (state === "washing") {
@@ -58,6 +57,20 @@ const WashingMachine = () => {
       setState("paused");
     }
   };
+
+  useEffect(() => {
+    if (state === "washing") {
+      document.title = `washing (${formatTime(timeRemaining)})`;
+    } else if (state === "finished") {
+      document.title = "laundry finished";
+    } else {
+      document.title = "laundry";
+    }
+
+    return () => {
+      document.title = "Laundry Simulator";
+    };
+  }, [state, timeRemaining]);
 
   const resetMachine = () => {
     setState("idle");
@@ -135,12 +148,23 @@ const WashingMachine = () => {
           </div>
         </div>
         <div className="absolute inset-0 bg-gradient-to-br from-white to-transparent opacity-30 rounded-full"></div>
+        {/* Timer display */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="bg-white bg-opacity-70 rounded-full p-4">
+            <span className="text-3xl font-bold">
+              {state === "washing" || state === "paused"
+                ? formatTime(timeRemaining)
+                : state === "finished"
+                ? "00:00"
+                : "--:--"}
+            </span>
+          </div>
+        </div>
       </div>
       <div className="text-xl font-bold mb-2">
         {state === "idle" && "Ready"}
         {state === "filling" && "Filling..."}
-        {(state === "washing" || state === "paused") &&
-          `Washing: ${formatTime(timeRemaining)}`}
+        {(state === "washing" || state === "paused") && "Washing"}
         {state === "finished" && "Finished!"}
       </div>
       <div className="flex space-x-2 mb-4">
